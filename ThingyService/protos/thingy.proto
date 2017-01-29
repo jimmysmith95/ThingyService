@@ -1,0 +1,17 @@
+﻿syntax = "proto3";
+
+package thingy;
+
+service ThingyService {
+
+  rpc GetThingy (GetThingyRequest) returns (Thingy) {}
+}
+
+message GetThingyRequest {
+  int32 id = 1;
+}
+
+message Thingy {
+  int32 id = 1;
+  string name = 2;
+}
