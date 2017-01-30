@@ -8,20 +8,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Grpc.Core;
 using ThingyService.GrpcImpl;
+using ThingyService.Repositories;
 
 namespace ThingyService
 {
     class Program
     {
         const int Port = 50051;
+        const string ConnectionString = "Data Source=localhost\\SQLEXPRESS;Database=Thingy;Integrated Security=SSPI;";
 
         static void Main(string[] args)
         {
             Migrate();
 
+            ThingyRepository repository = new ThingyRepository(ConnectionString);
             Server server = new Server
             {
-                Services = { Thingy.ThingyService.BindService(new ThingyServiceImpl()) },
+                Services = { Thingy.ThingyService.BindService(new ThingyServiceImpl(repository)) },
                 Ports = { new ServerPort("localhost", Port, ServerCredentials.Insecure) }
             };
             server.Start();
@@ -36,7 +39,7 @@ namespace ThingyService
         static void Migrate()
         {
             var migrationsAssembly = typeof(Program).Assembly;
-            using (var connection = new SqlConnection("Data Source=localhost\\SQLEXPRESS;Database=Thingy;Integrated Security=SSPI;"))
+            using (var connection = new SqlConnection(ConnectionString))
             {
                 var databaseProvider = new MssqlDatabaseProvider(connection);
                 var migrator = new SimpleMigrator(migrationsAssembly, databaseProvider);
